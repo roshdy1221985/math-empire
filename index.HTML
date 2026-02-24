@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بوابة إمبراطورية الرياضيات | أ. رشدي سيد</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Amiri:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #040d21;
+            --gold: #d4af37;
+            --gold-grad: linear-gradient(45deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(212, 175, 55, 0.3);
+        }
+
+        body {
+            margin: 0; font-family: 'Cairo', sans-serif;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #040d21 100%);
+            color: #fff; min-height: 100vh; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; overflow: hidden;
+        }
+
+        .main-gate {
+            text-align: center; z-index: 10; padding: 20px; width: 90%;
+        }
+
+        .logo {
+            font-family: 'Amiri'; font-size: clamp(2.5rem, 8vw, 4.5rem); color: var(--gold);
+            margin-bottom: 10px; text-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
+        }
+
+        .welcome-text {
+            font-size: 1.2rem; opacity: 0.8; margin-bottom: 40px;
+        }
+
+        .gate-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 30px; width: 100%; max-width: 1000px; margin: 0 auto;
+        }
+
+        .gate-card {
+            background: var(--glass); border: 2px solid var(--border);
+            border-radius: 30px; padding: 40px; cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative; overflow: hidden; backdrop-filter: blur(15px);
+        }
+
+        .gate-card:hover {
+            transform: translateY(-15px); border-color: var(--gold);
+            box-shadow: 0 20px 50px rgba(212, 175, 55, 0.2);
+        }
+
+        .gate-card i { font-size: 5rem; display: block; margin-bottom: 20px; filter: drop-shadow(0 0 10px rgba(212,175,55,0.3)); }
+        .gate-card h2 { margin: 0; font-family: 'Amiri'; font-size: 2.2rem; color: var(--gold); }
+        .gate-card p { opacity: 0.7; margin-top: 10px; font-size: 1rem; }
+
+        /* تأثير اللمعان الملكي */
+        .gate-card::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            transform: rotate(45deg); transition: 0.5s; pointer-events: none;
+        }
+        .gate-card:hover::before { left: 0; top: 0; }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="main-gate" id="portal-area">
+        <div class="logo">🏰 إمبراطورية الرياضيات</div>
+        <div class="welcome-text">أهلاً بك في البوابة الملكية.. اختر مسارك بعناية</div>
+
+        <div class="gate-grid">
+            <div class="gate-card" id="card-student" onclick="goTo('student')">
+                <div style="font-size: 5rem;">⚔️</div>
+                <h2>بطل الإمبراطورية</h2>
+                <p>دخول الطلاب لخوض التحديات واستلام الأوسمة</p>
+            </div>
+
+            <div class="gate-card" id="card-parent" onclick="goTo('parent')">
+                <div style="font-size: 5rem;">🛡️</div>
+                <h2>ديوان أولياء الأمور</h2>
+                <p>متابعة تقارير الأبطال ومراقبة الإنجازات</p>
+            </div>
+
+            <div class="gate-card" id="card-teacher" onclick="goTo('teacher')">
+                <div style="font-size: 5rem;">👑</div>
+                <h2>عرش الإمبراطور</h2>
+                <p>خاص بالأستاذ رشدي سيد (إدارة المنصة)</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // دالة الذكاء الاصطناعي لفحص الهوية عند التحميل
+        window.onload = function() {
+            const role = localStorage.getItem('royal_role');
+            const studentLoggedIn = localStorage.getItem('mathHero');
+
+            // إذا كان المستخدم طالباً مسجلاً، وجهه فوراً لواجهته ولن يرى البوابة
+            if (role === 'student' && studentLoggedIn) {
+                window.location.href = 'student.html';
+            }
+        }
+
+        function goTo(role) {
+            // حفظ الصفة المختارة
+            localStorage.setItem('royal_role', role);
+
+            if (role === 'student') {
+                window.location.href = 'student.html';
+            } else if (role === 'parent') {
+                window.location.href = 'parent.html';
+            } else if (role === 'teacher') {
+                // هنا يمكن إضافة حماية إضافية (كلمة مرور) قبل التوجيه لـ admin.html
+                window.location.href = 'admin.html';
+            }
+        }
+    </script>
+</body>
+</html>

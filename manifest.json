@@ -1,0 +1,22 @@
+{
+  "name": "منصة الأستاذ رشدي سيد التعليمية",
+  "short_name": "منصة رشدي",
+  "description": "تطبيق الرياضيات الذكي لمدرسة الشيخ سعيد بن أحمد الكندي",
+  "start_url": "student.html",
+  "display": "standalone",
+  "background_color": "#040d21",
+  "theme_color": "#d4af37",
+  "icons": [
+    {
+      "src": "teacher.jpg",
+      "sizes": "192x192",
+      "type": "image/jpg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "teacher.jpg",
+      "sizes": "512x512",
+      "type": "image/jpg"
+    }
+  ]
+}

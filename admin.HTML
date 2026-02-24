@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>لوحة التحكم الملكية | الأستاذ رشدي سيد</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Amiri:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #d4af37;
+            --gold-grad: linear-gradient(45deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+            --bg: #040d21;
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(212, 175, 55, 0.3);
+        }
+
+        body { margin: 0; font-family: 'Cairo', sans-serif; background: var(--bg); color: #fff; overflow-x: hidden; }
+
+        /* شاشة الدخول */
+        #login-overlay {
+            position: fixed; inset: 0; background: radial-gradient(circle, #1a1a2e, #000);
+            display: flex; justify-content: center; align-items: center; z-index: 9999;
+        }
+        .login-box {
+            background: var(--glass); padding: 40px; border-radius: 30px; border: 1px solid var(--gold);
+            text-align: center; width: 350px; backdrop-filter: blur(15px);
+        }
+
+        /* الهيكل الرئيسي */
+        #admin-panel { display: none; min-height: 100vh; display: flex; }
+        .sidebar { 
+            width: 280px; background: #000; border-left: 1px solid var(--border); 
+            padding: 40px 20px; position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column;
+        }
+        
+        .nav-link {
+            padding: 15px 20px; margin-bottom: 10px; border-radius: 12px; cursor: pointer;
+            transition: 0.3s; display: flex; align-items: center; gap: 12px; color: rgba(255,255,255,0.7);
+        }
+        .nav-link:hover, .nav-link.active { background: var(--glass); color: var(--gold); border-right: 5px solid var(--gold); }
+
+        .main-content { flex: 1; padding: 40px; overflow-y: auto; }
+        .section { display: none; }
+        .section.active { display: block; animation: fadeIn 0.5s ease; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .card { background: var(--glass); padding: 30px; border-radius: 25px; border: 1px solid var(--border); margin-bottom: 25px; }
+        label { color: var(--gold); font-weight: bold; display: block; margin-top: 15px; }
+        input, select, textarea { 
+            width: 100%; padding: 12px; margin-top: 8px; border-radius: 10px; 
+            background: #0d1b3a; color: #fff; border: 1px solid var(--gold); font-family: 'Cairo'; box-sizing: border-box;
+        }
+
+        /* تصميم قائمة الدروس المتعددة */
+        .multi-select-container {
+            width: 100%; max-height: 200px; overflow-y: auto; margin-top: 8px;
+            background: #0d1b3a; border: 1px solid var(--gold); border-radius: 10px; padding: 10px; box-sizing: border-box;
+        }
+        .multi-select-unit { color: var(--gold); font-weight: bold; margin-top: 10px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
+        .multi-select-lesson { display: flex; align-items: center; gap: 10px; padding: 5px 10px; cursor: pointer; transition: 0.2s; }
+        .multi-select-lesson:hover { background: rgba(212,175,55,0.1); border-radius: 5px; }
+        .multi-select-lesson input { width: auto; margin: 0; cursor: pointer; }
+        
+        .btn-gold { 
+            background: var(--gold-grad); color: #000; border: none; padding: 15px; 
+            border-radius: 12px; font-weight: 900; cursor: pointer; width: 100%; font-size: 1.1rem; margin-top: 25px;
+        }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: rgba(0,0,0,0.2); }
+        th { background: rgba(212,175,55,0.1); color: var(--gold); padding: 15px; text-align: right; border-bottom: 1px solid var(--gold); }
+        td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+
+        .home-btn { 
+            margin-top: auto; background: rgba(255,255,255,0.05); color: #fff; 
+            border: 1px solid var(--border); padding: 12px; border-radius: 10px; text-decoration: none;
+            display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: bold;
+        }
+
+        /* الإحصائيات */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 15px; }
+        .stat-box { background: rgba(0,0,0,0.4); padding: 25px; border-radius: 20px; border: 1px solid var(--border); text-align: center; }
+        .stat-box div:first-child { color: rgba(255,255,255,0.8); font-size: 1.1rem; margin-bottom: 10px; }
+        .stat-number { font-size: 2.5rem; color: var(--gold); font-weight: 900; font-family: 'Amiri'; }
+        .crown-icon { font-size: 1.5rem; color: var(--gold); }
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay">
+        <div class="login-box">
+            <h2 style="color:var(--gold); font-family:'Amiri';">خزنة الأستاذ رشدي</h2>
+            <p>أدخل كلمة المرور السرية</p>
+            <input type="password" id="pass-input" placeholder="كلمة المرور">
+            <button class="btn-gold" onclick="checkLogin()">دخول الإمبراطورية 🗝️</button>
+        </div>
+    </div>
+
+    <div id="admin-panel">
+        <aside class="sidebar">
+            <div style="text-align:center; margin-bottom:40px;">
+                <h2 style="color:var(--gold); font-family:'Amiri'; margin:0;">لوحة التحكم</h2>
+                <small>مدرسة الشيخ سعيد بن أحمد</small>
+            </div>
+            
+            <div class="nav-link" onclick="showSection('dash')">📊 الإحصائيات العامة</div>
+            <div class="nav-link" onclick="showSection('students')">🛡️ مراقبة الرعية</div>
+            <div class="nav-link" onclick="showSection('scrolls')">📜 لفائف المعرفة (PDF)</div>
+            <div class="nav-link active" onclick="showSection('bank')">📚 بنك الأسئلة الملكي</div>
+            <div class="nav-link" onclick="showSection('exams')">⏳ جدولة الاختبارات</div>
+            <div class="nav-link" onclick="showSection('reports')">📑 التقارير الشهرية</div>
+
+            <a href="student.html" class="home-btn">🏠 العودة للمنصة الرئيسية</a>
+        </aside>
+
+        <main class="main-content">
+            <header>
+                <h1 style="color:var(--gold); font-family:'Amiri'; font-size:2.5rem; margin:0;">أهلاً بك، أستاذ رشدي سيد</h1>
+            </header>
+
+            <section id="dash" class="section">
+                <div class="card">
+                    <h2 style="color:var(--gold); margin-top: 0;">👁️ نظرة عامة على الإمبراطورية</h2>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div>👥 إجمالي الرعية (الطلاب)</div>
+                            <div class="stat-number" id="stat-total-students">0</div>
+                        </div>
+                        <div class="stat-box" style="border-color: var(--gold); background: rgba(212,175,55,0.05);">
+                            <div>👑 سلطان الأرقام الحالي</div>
+                            <div class="stat-number" id="stat-top-student" style="font-size:1.8rem;">لا يوجد</div>
+                            <div id="stat-top-xp" style="color: var(--gold); font-size: 1rem; margin-top: 5px;">0 XP</div>
+                        </div>
+                        <div class="stat-box">
+                            <div>⭐ متوسط النقاط</div>
+                            <div class="stat-number" id="stat-avg-xp">0</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="students" class="section">
+                <div class="card">
+                    <h2 style="color:var(--gold); margin-top: 0;">🛡️ سجل الأبطال (مراقبة الرعية)</h2>
+                    <p style="opacity: 0.8;">قائمة بجميع الطلاب المسجلين في منصتك (يتم جلبها من المتصفح المحلي).</p>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>البطل</th>
+                                <th>المدرسة</th>
+                                <th>النقاط (XP)</th>
+                                <th>الرتبة</th>
+                            </tr>
+                        </thead>
+                        <tbody id="students-table-body">
+                            </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="scrolls" class="section">
+                <div class="card">
+                    <h2 style="color:var(--gold);">📜 إيداع لفافة معرفة جديدة (PDF)</h2>
+                    <p>قم برفع ملخص الدرس ليظهر للطلاب قبل بدء التحديات.</p>
+                    
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                        <div>
+                            <label>📍 الدرس المستهدف</label>
+                            <select id="pdf-lesson-select">
+                                <option value="">-- اختر الدرس --</option>
+                                <optgroup label="الوحدة الأولى: القياس">
+                                    <option value="17-1 قياس الكتلة والسعة (1)">17-1 قياس الكتلة والسعة (1)</option>
+                                    <option value="17-2 قياس الكتلة والسعة (2)">17-2 قياس الكتلة والسعة (2)</option>
+                                    <option value="18-1 تحويل الوقت">18-1 تحويل الوقت</option>
+                                    <option value="18-2 المناطق الزمنية (1)">18-2 المناطق الزمنية (1)</option>
+                                    <option value="19-1 حساب المساحة والمحيط">19-1 حساب المساحة والمحيط</option>
+                                </optgroup>
+                                <optgroup label="الوحدة الثانية: معالجة البيانات">
+                                    <option value="20-1 الجداول والرسومات البيانية">20-1 الجداول والرسومات البيانية</option>
+                                    <option value="20-2 المخططات الدائرية">20-2 المخططات الدائرية</option>
+                                    <option value="21-1 المتوسط الإحصائي">21-1 المتوسط الإحصائي</option>
+                                    <option value="21-2 استخدام الإحصاء">21-2 استخدام الإحصاء</option>
+                                    <option value="22-1 لغة الاحتمال">22-1 لغة الاحتمال</option>
+                                </optgroup>
+                                <optgroup label="الوحدة الثالثة: العدد">
+                                    <option value="23-1 نظام الأعداد (2)">23-1 نظام الأعداد (2)</option>
+                                    <option value="23-2 تاريخ الأعداد (2)">23-2 تاريخ الأعداد (2)</option>
+                                    <option value="24-1 الجمع والطرح (1)">24-1 الجمع والطرح (1)</option>
+                                    <option value="24-2 الضرب والقسمة">24-2 الضرب والقسمة</option>
+                                    <option value="25-1 الجمع والطرح (2)">25-1 الجمع والطرح (2)</option>
+                                    <option value="26-1 قوانين الحساب">26-1 قوانين الحساب</option>
+                                    <option value="26-2 الكسور والقسمة">26-2 الكسور والقسمة</option>
+                                    <option value="27-1 الكسور">27-1 الكسور</option>
+                                    <option value="28-1 النسب المئوية">28-1 النسب المئوية</option>
+                                    <option value="29-1 النسبة والتناسب">29-1 النسبة والتناسب</option>
+                                </optgroup>
+                                <optgroup label="الوحدة الرابعة: الهندسة">
+                                    <option value="33-1 المنشورات رباعية الأضلاع">33-1 المنشورات رباعية الأضلاع</option>
+                                    <option value="33-2 متعدد الأوجه المنتظم">33-2 متعدد الأوجه المنتظم</option>
+                                    <option value="34-1 تصنيف الأشكال">34-1 تصنيف الأشكال</option>
+                                    <option value="35-1 رسم وقياس الزوايا">35-1 رسم وقياس الزوايا</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div>
+                            <label>📂 ملف الملخص (PDF)</label>
+                            <input type="file" id="pdf-file-input" accept=".pdf">
+                        </div>
+                    </div>
+                    <button class="btn-gold" onclick="uploadSmartPDF()">إيداع في سجلات الخلود 💾</button>
+                    <div id="pdf-status" style="text-align:center; margin-top:10px; font-weight:bold;"></div>
+                </div>
+
+                <div class="card">
+                    <h3 style="color:var(--gold);">📂 اللفائف المودعة حالياً في الخزنة</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>الدرس</th>
+                                <th>معاينة</th>
+                                <th>إجراء</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pdfs-table-body">
+                            </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="bank" class="section active">
+                <div class="card">
+                    <h2 style="color:var(--gold);" id="form-title">🔨 إضافة تحدي ملكي جديد</h2>
+                    <input type="hidden" id="edit-id"> 
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                        <div>
+                            <label>📍 الوحدة الدراسية</label>
+                            <select id="q-unit" onchange="updateLessons()">
+                                <option value="">-- اختر الوحدة --</option>
+                                <option value="الوحدة الأولى: القياس (17-19)">الوحدة الأولى: القياس (17-19)</option>
+                                <option value="الوحدة الثانية: معالجة البيانات (20-22)">الوحدة الثانية: معالجة البيانات (20-22)</option>
+                                <option value="الوحدة الثالثة: العدد (23-29)">الوحدة الثالثة: العدد (23-29)</option>
+                                <option value="الوحدة الرابعة: الهندسة (33-35)">الوحدة الرابعة: الهندسة (33-35)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>📖 الدرس</label>
+                            <select id="q-lesson"><option value="">اختر الوحدة أولاً</option></select>
+                        </div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top:15px;">
+                        <div>
+                            <label>🎖️ نوع السؤال</label>
+                            <select id="q-type" onchange="toggleOptions()">
+                                <option value="choice">اختيار من متعدد 🔘</option>
+                                <option value="true_false">صواب أو خطأ ✅/❌</option>
+                                <option value="short">إجابة قصيرة ✍️</option> </select>
+                        </div>
+                        <div>
+                            <label>🖼️ صورة السؤال (اختياري)</label>
+                            <input type="file" id="q-image" accept="image/*">
+                        </div>
+                    </div>
+
+                    <label>📝 نص السؤال</label>
+                    <textarea id="q-text" rows="3" placeholder="اكتب السؤال الرياضي هنا..."></textarea>
+                    
+                    <div id="options-container">
+                        <label>🔘 الخيارات (افصل بينها بفاصلة , )</label>
+                        <input type="text" id="q-options" placeholder="مثال: لتر , ملليلتر , جرام">
+                    </div>
+
+                    <label>✅ الإجابة الصحيحة</label>
+                    <input type="text" id="q-answer" placeholder="اكتب الإجابة بدقة">
+
+                    <button class="btn-gold" id="save-btn" onclick="saveSmartQuestion()">حفظ في الخزنة الملكية 💾</button>
+                    <button id="cancel-btn" style="display:none; margin-top:10px; background:#444; color:white; border:none; padding:10px; border-radius:10px; width:100%; cursor:pointer;" onclick="resetForm()">إلغاء التعديل</button>
+                    <div id="status-msg" style="text-align:center; margin-top:10px; font-weight:bold;"></div>
+                </div>
+
+                <div class="card">
+                    <h3>📂 معاينة وإدارة الأسئلة الحالية</h3>
+                    <table>
+                        <thead>
+                            <tr><th>السؤال</th><th>الدرس</th><th>الصورة</th><th>إجراء</th></tr>
+                        </thead>
+                        <tbody id="questions-table-body">
+                            </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="exams" class="section">
+                <div class="card">
+                    <h2 style="color:var(--gold); margin-top:0;">⏳ جدولة اختبار (أسبوعي / شهري)</h2>
+                    <p>حدد موعد الاختبار ومدته ليظهر كإشعار تنبيهي ويفتح للطالب في الوقت المحدد.</p>
+                    
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                        <div>
+                            <label>📌 عنوان الاختبار (مثال: اختبار شهر أكتوبر)</label>
+                            <input type="text" id="exam-title" placeholder="اسم الاختبار">
+                        </div>
+                        <div>
+                            <label>🎖️ نوع الاختبار</label>
+                            <select id="exam-type">
+                                <option value="أسبوعي">اختبار أسبوعي</option>
+                                <option value="شهري">اختبار شهري</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>📅 تاريخ الاختبار</label>
+                            <input type="date" id="exam-date">
+                        </div>
+                        <div>
+                            <label>⏰ وقت الاختبار</label>
+                            <input type="time" id="exam-time">
+                        </div>
+                        <div>
+                            <label>⏱️ مدة الاختبار (بالدقائق)</label>
+                            <input type="number" id="exam-duration" placeholder="مثال: 15" min="1" value="15">
+                        </div>
+                        
+                        <div>
+                            <label>🎯 نوعية الأسئلة المستهدفة</label>
+                            <select id="exam-target-q-type">
+                                <option value="all">جميع الأنواع (عشوائي)</option>
+                                <option value="choice">اختيار من متعدد فقط 🔘</option>
+                                <option value="true_false">صواب أو خطأ فقط ✅/❌</option>
+                                <option value="short">إجابة قصيرة فقط ✍️</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>🔢 عدد الأسئلة المطلوب سحبها</label>
+                            <input type="number" id="exam-num-q" placeholder="مثال: 10" min="1" value="10">
+                        </div>
+                        <div>
+                            <label>⭐ درجة كل سؤال</label>
+                            <input type="number" id="exam-points-q" placeholder="مثال: 10" min="1" value="10">
+                        </div>
+                        
+                        <div style="grid-column: span 2;">
+                            <label>📖 الدروس المستهدفة (يمكنك اختيار أكثر من درس)</label>
+                            <div class="multi-select-container" id="exam-lesson-container">
+                                </div>
+                        </div>
+                    </div>
+                    <button class="btn-gold" onclick="scheduleExam()">إطلاق الإشعار الملكي 🔔</button>
+                    <div id="exam-status" style="margin-top:10px; font-weight:bold; text-align:center;"></div>
+                </div>
+
+                <div class="card">
+                    <h3 style="color:var(--gold);">🔔 الاختبارات المجدولة حالياً</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>الاختبار</th>
+                                <th>التاريخ والوقت</th>
+                                <th>الدروس المستهدفة</th>
+                                <th>المدة</th>
+                                <th>الأسئلة والدرجات</th>
+                                <th>إجراء</th>
+                            </tr>
+                        </thead>
+                        <tbody id="exams-table-body">
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="reports" class="section">
+                <div class="card">
+                    <h2>📑 التقارير والطباعة</h2>
+                    <button class="btn-gold" onclick="window.print()">طباعة التقرير الحالي 🖨️</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+<script>
+    const SECRET_PASS = "Roshdy2026";
+    const API_URL = "http://127.0.0.1:8000"; 
+    let allQuestions = [];
+    
+    const lessonsMap = {
+        "الوحدة الأولى: القياس (17-19)": [
+            "17-1 قياس الكتلة والسعة (1)", "17-2 قياس الكتلة والسعة (2)",
+            "18-1 تحويل الوقت", "18-2 المناطق الزمنية (1)", "19-1 حساب المساحة والمحيط"
+        ],
+        "الوحدة الثانية: معالجة البيانات (20-22)": [
+            "20-1 الجداول والرسومات البيانية", "20-2 المخططات الدائرية",
+            "21-1 المتوسط الإحصائي", "21-2 استخدام الإحصاء", "22-1 لغة الاحتمال"
+        ],
+        "الوحدة الثالثة: العدد (23-29)": [
+            "23-1 نظام الأعداد (2)", "23-2 تاريخ الأعداد (2)", "24-1 الجمع والطرح (1)",
+            "24-2 الضرب والقسمة", "25-1 الجمع والطرح (2)", "26-1 قوانين الحساب",
+            "26-2 الكسور والقسمة", "27-1 الكسور", "28-1 النسب المئوية", "29-1 النسبة والتناسب"
+        ],
+        "الوحدة الرابعة: الهندسة (33-35)": [
+            "33-1 المنشورات رباعية الأضلاع", "33-2 متعدد الأوجه المنتظم",
+            "34-1 تصنيف الأشكال", "35-1 رسم وقياس الزوايا"
+        ]
+    };
+
+    function renderExamLessonCheckboxes() {
+        const container = document.getElementById('exam-lesson-container');
+        let html = '';
+        for(let unit in lessonsMap) {
+            html += `<div class="multi-select-unit">${unit}</div>`;
+            lessonsMap[unit].forEach(lesson => {
+                html += `
+                <label class="multi-select-lesson">
+                    <input type="checkbox" value="${lesson}" class="exam-lesson-cb"> 
+                    ${lesson}
+                </label>`;
+            });
+        }
+        container.innerHTML = html;
+    }
+
+    function checkLogin() {
+        if(document.getElementById('pass-input').value === SECRET_PASS) {
+            document.getElementById('login-overlay').style.display = 'none';
+            document.getElementById('admin-panel').style.display = 'flex';
+            loadQuestions();
+            loadDashboardData(); 
+            renderExamLessonCheckboxes();
+        } else { alert("⚠️ كلمة مرور خاطئة!"); }
+    }
+
+    function showSection(id) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        
+        const links = document.querySelectorAll('.nav-link');
+        links.forEach(link => {
+            if(link.getAttribute('onclick').includes(id)) link.classList.add('active');
+        });
+
+        if(id === 'bank') loadQuestions();
+        if(id === 'dash' || id === 'students') loadDashboardData();
+        if(id === 'scrolls') loadPDFs(); 
+        if(id === 'exams') loadScheduledExams();
+    }
+
+    function getRankTitle(xp) {
+        if (xp >= 3000) return "👑 سلطان الأرقام";
+        if (xp >= 1500) return "🧙‍♂️ الوزير الحكيم";
+        if (xp >= 500) return "⚔️ فارس الرياضيات";
+        if (xp >= 100) return "🛡️ جندي شجاع";
+        return "مستكشف جديد";
+    }
+
+    function loadDashboardData() {
+        let allStudents = JSON.parse(localStorage.getItem('allMathHeroes')) || [];
+        const singleHero = JSON.parse(localStorage.getItem('mathHero'));
+        
+        if (singleHero && !allStudents.find(s => s.username === singleHero.username)) {
+            if(!singleHero.xp) singleHero.xp = Math.floor(Math.random() * 2000); 
+            allStudents.push(singleHero);
+        }
+
+        allStudents.sort((a, b) => (b.xp || 0) - (a.xp || 0));
+
+        const totalStudents = allStudents.length;
+        const topStudent = allStudents.length > 0 ? allStudents[0] : null;
+        const totalXP = allStudents.reduce((sum, student) => sum + (student.xp || 0), 0);
+        const avgXP = totalStudents > 0 ? Math.floor(totalXP / totalStudents) : 0;
+
+        document.getElementById('stat-total-students').innerText = totalStudents;
+        if (topStudent) {
+            document.getElementById('stat-top-student').innerText = topStudent.full_name || topStudent.username;
+            document.getElementById('stat-top-xp').innerText = `${topStudent.xp || 0} XP`;
+        }
+        document.getElementById('stat-avg-xp').innerText = avgXP;
+
+        const tbody = document.getElementById('students-table-body');
+        if(allStudents.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; opacity:0.6;">لا يوجد طلاب مسجلين حتى الآن. يجب عليهم التسجيل من صفحة الطالب أولاً.</td></tr>`;
+        } else {
+            tbody.innerHTML = allStudents.map((student, index) => {
+                const rank = getRankTitle(student.xp || 0);
+                const isTop = index === 0 ? '<span class="crown-icon">👑</span> ' : '';
+                return `
+                    <tr>
+                        <td style="font-weight: bold; color: var(--gold);">${isTop}${student.full_name || student.username}</td>
+                        <td>${student.school_name || 'مدرسة الشيخ سعيد بن أحمد'}</td>
+                        <td style="font-weight: bold;">${student.xp || 0}</td>
+                        <td>${rank}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    }
+
+    function updateLessons() {
+        const unit = document.getElementById('q-unit').value;
+        const sel = document.getElementById('q-lesson');
+        sel.innerHTML = '<option value="">-- اختر الدرس --</option>';
+        if(unit && lessonsMap[unit]) {
+            lessonsMap[unit].forEach(l => sel.innerHTML += `<option value="${l}">${l}</option>`);
+        }
+    }
+
+    function toggleOptions() {
+        const type = document.getElementById('q-type').value;
+        document.getElementById('options-container').style.display = (type === 'choice') ? 'block' : 'none';
+    }
+
+    async function scheduleExam() {
+        const title = document.getElementById('exam-title').value;
+        const type = document.getElementById('exam-type').value;
+        const date = document.getElementById('exam-date').value;
+        const time = document.getElementById('exam-time').value;
+        const duration = document.getElementById('exam-duration').value; 
+        const num_q = document.getElementById('exam-num-q').value; 
+        const points_q = document.getElementById('exam-points-q').value;
+        const target_q_type = document.getElementById('exam-target-q-type').value;
+        const selectedLessonCbs = document.querySelectorAll('.exam-lesson-cb:checked');
+        const selectedLessonsArray = Array.from(selectedLessonCbs).map(cb => cb.value);
+        const lesson = selectedLessonsArray.join(',');
+        const status = document.getElementById('exam-status');
+
+        if(!title || !date || !time || selectedLessonsArray.length === 0 || !duration || !num_q || !points_q) {
+            status.style.color = "#ff5e5e";
+            status.innerText = "⚠️ يرجى ملء كافة البيانات واختيار درس واحد على الأقل!";
+            return;
+        }
+
+        const fd = new FormData();
+        fd.append('title', title); 
+        fd.append('exam_type', type);
+        fd.append('exam_date', date); 
+        fd.append('exam_time', time);
+        fd.append('target_lesson', lesson);
+        fd.append('duration', duration); 
+        fd.append('num_questions', num_q); 
+        fd.append('points_per_q', points_q); 
+        fd.append('target_q_type', target_q_type); 
+
+        try {
+            status.style.color = "var(--gold)";
+            status.innerText = "جاري إطلاق الإشعار...";
+            const res = await fetch(`${API_URL}/api/admin/exams`, { method: 'POST', body: fd });
+            if (res.ok) {
+                status.innerText = "✅ تم جدولة الاختبار وإرسال الإشعارات بنجاح!";
+                status.style.color = "#00ff00";
+                document.getElementById('exam-title').value = '';
+                document.getElementById('exam-duration').value = '15'; 
+                document.getElementById('exam-num-q').value = '10'; 
+                document.getElementById('exam-points-q').value = '10'; 
+                document.getElementById('exam-target-q-type').value = 'all'; 
+                selectedLessonCbs.forEach(cb => cb.checked = false);
+                loadScheduledExams();
+            } else { status.innerText = "❌ فشلت عملية الجدولة."; status.style.color = "#ff5e5e"; }
+        } catch(e) { status.innerText = "⚠️ خطأ في الاتصال بالخادم."; status.style.color = "#ff5e5e"; }
+    }
+
+    async function loadScheduledExams() {
+        try {
+            const res = await fetch(`${API_URL}/api/exams/upcoming`);
+            const exams = await res.json();
+            const tbody = document.getElementById('exams-table-body');
+            if (exams.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; opacity:0.6;">لا توجد اختبارات مجدولة حالياً.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = exams.map(e => `
+                <tr>
+                    <td style="font-weight:bold; color:var(--gold);">${e.title}<br><small style="color:#aaa;">(${e.exam_type})</small></td>
+                    <td style="direction:ltr;">${e.exam_date} | ${e.exam_time}</td>
+                    <td><small>${e.target_lesson.substring(0, 30)}${e.target_lesson.length > 30 ? '...' : ''}</small></td>
+                    <td>${e.duration} دقيقة</td> 
+                    <td>${e.num_questions} سؤال (${e.points_per_q} نقطة للواحد)</td>
+                    <td><button onclick="deleteExam(${e.id})" style="background:#ff5e5e; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; font-weight:bold;">إلغاء 🗑️</button></td>
+                </tr>`).join('');
+        } catch(e) { console.error("Error fetching exams:", e); }
+    }
+
+    async function deleteExam(id) {
+        if(confirm("هل أنت متأكد من إلغاء هذا الاختبار؟ لن يظهر كإشعار للطلاب بعد الآن.")) {
+            try {
+                await fetch(`${API_URL}/api/admin/exams/${id}`, { method: 'DELETE' });
+                loadScheduledExams();
+            } catch(e) { alert("خطأ في الاتصال بالسيرفر"); }
+        }
+    }
+
+    async function loadPDFs() {
+        try {
+            const res = await fetch(`${API_URL}/api/admin/summaries_list`);
+            const data = await res.json();
+            const tbody = document.getElementById('pdfs-table-body');
+            if(data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; opacity:0.6;">لا توجد ملفات مرفوعة حالياً</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = data.map(pdf => `
+                <tr>
+                    <td>${pdf.lesson}</td>
+                    <td><a href="${API_URL}/${pdf.pdf_url}" target="_blank" style="color:var(--gold); font-weight:bold; text-decoration:none;">عرض الملف 👁️</a></td>
+                    <td>
+                        <button onclick="editPDF('${pdf.lesson}')" style="background:var(--gold); border:none; padding:5px 10px; border-radius:5px; cursor:pointer; font-weight:bold;">تعديل ✏️</button>
+                        <button onclick="deletePDF('${pdf.lesson}')" style="background:#ff5e5e; border:none; padding:5px 10px; border-radius:5px; cursor:pointer; color:white; font-weight:bold;">حذف 🗑️</button>
+                    </td>
+                </tr>`).join('');
+        } catch(e) { console.error("خطأ في جلب الملفات"); }
+    }
+
+    async function deletePDF(lesson) {
+        if(confirm(`هل أنت متأكد من حذف لفافة الدرس: ${lesson} بشكل نهائي؟`)) {
+            const safeLessonName = encodeURIComponent(lesson);
+            try {
+                await fetch(`${API_URL}/api/admin/summaries/${safeLessonName}`, { method: 'DELETE' });
+                alert("تم الحذف بنجاح!");
+                loadPDFs(); 
+            } catch(e) { alert("فشل الحذف. تأكد من اتصال السيرفر."); }
+        }
+    }
+
+    function editPDF(lesson) {
+        document.getElementById('pdf-lesson-select').value = lesson;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        alert("لتعديل الملف، قم باختيار الملف الجديد من جهازك واضغط 'إيداع' ليتم استبدال الملف القديم تلقائياً.");
+    }
+
+    async function uploadSmartPDF() {
+        const lesson = document.getElementById('pdf-lesson-select').value;
+        const fileInput = document.getElementById('pdf-file-input');
+        const status = document.getElementById('pdf-status');
+        if(!lesson || !fileInput.files[0]) {
+            status.style.color = "#ff5e5e"; status.innerText = "⚠️ يرجى اختيار الدرس والملف أولاً!"; return;
+        }
+        const file = fileInput.files[0];
+        if(file.type !== "application/pdf") {
+            status.style.color = "#ff5e5e"; status.innerText = "⚠️ يرجى اختيار ملف بصيغة PDF فقط."; return;
+        }
+        const formData = new FormData();
+        formData.append('lesson', lesson);
+        formData.append('pdf', file);
+        try {
+            status.style.color = "#d4af37"; status.innerText = "جاري إيداع اللفافة في الخزنة الحقيقية (السيرفر)...";
+            const res = await fetch(`${API_URL}/api/admin/summaries`, { method: 'POST', body: formData });
+            if(res.ok) {
+                status.style.color = "#00ff00"; status.innerText = "✨ تم رفع ملخص الدرس وحفظه في السيرفر بنجاح!";
+                fileInput.value = ""; loadPDFs(); 
+            } else { status.style.color = "#ff5e5e"; status.innerText = "❌ فشل الرفع."; }
+        } catch(e) { status.style.color = "#ff5e5e"; status.innerText = "⚠️ المحرك متوقف! تأكد من تشغيل السيرفر."; }
+    }
+    
+    async function loadQuestions() {
+        try {
+            const res = await fetch(`${API_URL}/api/admin/questions`);
+            allQuestions = await res.json();
+            const tbody = document.getElementById('questions-table-body');
+            tbody.innerHTML = allQuestions.map(q => `
+                <tr>
+                    <td>${q.question.substring(0, 50)}...</td>
+                    <td>${q.lesson}</td>
+                    <td>${q.image_url ? `<img src="${API_URL}/${q.image_url}" width="40" style="border-radius:5px;">` : '📄'}</td>
+                    <td>
+                        <button onclick="editQuestion(${q.id})" style="background:var(--gold); border:none; padding:5px; border-radius:5px; cursor:pointer;">✏️</button>
+                        <button onclick="deleteQuestion(${q.id})" style="background:#ff5e5e; border:none; padding:5px; border-radius:5px; cursor:pointer; color:white;">🗑️</button>
+                    </td>
+                </tr>`).join('');
+        } catch(e) { console.error("المحرك غير متصل"); }
+    }
+
+    async function saveSmartQuestion() {
+        const status = document.getElementById('status-msg');
+        const editId = document.getElementById('edit-id').value;
+        const formData = new FormData();
+        const lesson = document.getElementById('q-lesson').value;
+        const qType = document.getElementById('q-type').value;
+        const question = document.getElementById('q-text').value;
+        const answer = document.getElementById('q-answer').value;
+        const options = document.getElementById('q-options').value;
+        const imageFile = document.getElementById('q-image').files[0];
+
+        if(!lesson || !question || !answer) {
+            status.style.color = "#ff5e5e"; status.innerText = "⚠️ يرجى إكمال الدرس ونص السؤال والإجابة!"; return;
+        }
+
+        formData.append('grade', "6");
+        formData.append('subject', "الرياضيات");
+        formData.append('lesson', lesson);
+        formData.append('q_type', qType);
+        formData.append('question', question);
+        formData.append('options', options || (qType === 'true_false' ? "صواب,خطأ" : "")); 
+        formData.append('answer', answer);
+        if(imageFile) formData.append('image', imageFile);
+
+        const url = editId ? `${API_URL}/api/admin/questions/${editId}` : `${API_URL}/api/admin/questions`;
+        const method = editId ? 'PUT' : 'POST';
+
+        try {
+            status.style.color = "#d4af37"; status.innerText = "جاري الاتصال بالخزنة...";
+            const res = await fetch(url, { method: method, body: formData });
+            if(res.ok) { alert("✨ تم الحفظ بنجاح!"); resetForm(); loadQuestions(); }
+            else { status.innerText = "❌ خطأ في البيانات أو السيرفر."; }
+        } catch(e) { status.innerText = "⚠️ المحرك متوقف! تأكد من تشغيل الخادم."; }
+    }
+
+    function editQuestion(id) {
+        const q = allQuestions.find(item => item.id === id);
+        if(!q) return;
+        document.getElementById('edit-id').value = q.id;
+        document.getElementById('q-text').value = q.question;
+        document.getElementById('q-answer').value = q.answer;
+        document.getElementById('q-options').value = q.options;
+        document.getElementById('q-type').value = q.q_type;
+        document.getElementById('form-title').innerText = "✏️ تعديل التحدي الحالي";
+        document.getElementById('save-btn').innerText = "تحديث السؤال الملكي ✨";
+        document.getElementById('cancel-btn').style.display = "block";
+        toggleOptions(); window.scrollTo(0, 0);
+    }
+
+    function resetForm() {
+        document.getElementById('edit-id').value = "";
+        document.getElementById('q-text').value = "";
+        document.getElementById('q-answer').value = "";
+        document.getElementById('q-options').value = "";
+        document.getElementById('form-title').innerText = "🔨 إضافة تحدي ملكي جديد";
+        document.getElementById('save-btn').innerText = "حفظ السؤال في الخزنة 💾";
+        document.getElementById('cancel-btn').style.display = "none";
+        document.getElementById('status-msg').innerText = "";
+    }
+
+    async function deleteQuestion(id) {
+        if(confirm("هل أنت متأكد من حذف هذا التحدي نهائياً؟")) {
+            await fetch(`${API_URL}/api/admin/questions/${id}`, { method: 'DELETE' });
+            loadQuestions();
+        }
+    }
+</script>
+</body>
+</html>
