@@ -360,7 +360,7 @@
 
     <aside class="sidebar" id="sidebar">
         <div class="photo-frame">
-            <img src="http://192.168.100.5:8000/static/teacher.jpg" alt="الأستاذ رشدي سيد" class="teacher-img" onerror="this.src='https://via.placeholder.com/120x120?text=RS'">
+            <img src="/static/teacher.jpg" alt="الأستاذ رشدي سيد" class="teacher-img" onerror="this.src='https://via.placeholder.com/120x120?text=RS'">
         </div>
         <h2 id="teacher-name">الأستاذ رشدي سيد</h2>
         <p>إمبراطورية الرياضيات</p>
@@ -441,7 +441,9 @@
         window.location.href = 'index.html';
     }
 
-    const API_URL = "http://192.168.100.5:8000"; // تأكد من الـ IP الخاص بجهازك
+    // ✅ التعديل الحاسم: جعل الرابط ديناميكياً ليعمل على Render
+    const API_URL = ""; 
+    
     let currentUser = JSON.parse(localStorage.getItem('mathHero'));
 
     // --- متغيرات الاختبار المجدول ---
