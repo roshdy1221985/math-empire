@@ -360,7 +360,7 @@
 
     <aside class="sidebar" id="sidebar">
         <div class="photo-frame">
-            <img src="http://192.168.100.5:8000/static/teacher.jpg" alt="الأستاذ رشدي سيد" class="teacher-img" onerror="this.src='https://via.placeholder.com/120x120?text=RS'">
+            <img src="/static/teacher.jpg" alt="الأستاذ رشدي سيد" class="teacher-img" onerror="this.src='https://via.placeholder.com/120x120?text=RS'">
         </div>
         <h2 id="teacher-name">الأستاذ رشدي سيد</h2>
         <p>إمبراطورية الرياضيات</p>
@@ -436,21 +436,19 @@
 
 <script>
     // --- 🛡️ حارس البوابة الملكي (Gatekeeper) ---
-    // هذا الكود يمنع الدخول المباشر للصفحة دون اختيار صفة "طالب" من البوابة الموحدة
     if (!localStorage.getItem('royal_role') || localStorage.getItem('royal_role') !== 'student') {
         window.location.href = 'index.html';
     }
 
-    const API_URL = "http://192.168.100.5:8000"; // تأكد من الـ IP الخاص بجهازك
+    // تم تغيير API_URL ليكون ديناميكياً للعمل على Render
+    const API_URL = window.location.origin; 
     let currentUser = JSON.parse(localStorage.getItem('mathHero'));
 
-    // --- متغيرات الاختبار المجدول ---
     let isExamMode = false;
     let examTimerInterval;
     let scheduledExamData = null;
-    let currentExamPointsPerQ = 100; // الافتراضي للتحدي العادي
+    let currentExamPointsPerQ = 100;
 
-    // --- تحديث قائمة جميع الطلاب في المتصفح ---
     function updateAllStudentsList(userObj) {
         let allStudents = JSON.parse(localStorage.getItem('allMathHeroes')) || [];
         const index = allStudents.findIndex(s => s.username === userObj.username);
@@ -627,7 +625,6 @@
         initTiltEffect();
     }
 
-    // --- نظام الإشعارات وجلب الاختبارات المجدولة ---
     async function checkUpcomingExams() {
         try {
             const res = await fetch(`${API_URL}/api/exams/upcoming`);
@@ -668,16 +665,21 @@
     }
 
     async function handleLogin() {
+        const u = document.getElementById('user-login').value.trim();
+        const p = document.getElementById('pass-login').value.trim();
+        if(!u || !p) return;
+
         toggleLoader(true);
         const fd = new FormData();
-        fd.append('username', document.getElementById('user-login').value);
-        fd.append('password', document.getElementById('pass-login').value);
+        fd.append('username', u);
+        fd.append('password', p);
         try {
             const res = await fetch(`${API_URL}/api/student/login`, { method:'POST', body:fd });
             toggleLoader(false);
             const data = await res.json();
             if (res.ok) {
                 localStorage.setItem('mathHero', JSON.stringify(data.user));
+                localStorage.setItem('royal_role', 'student');
                 updateAllStudentsList(data.user);
                 location.reload();
             } else alert("بيانات غير صحيحة");
@@ -686,8 +688,8 @@
 
     async function handleRegister() {
         const name = document.getElementById('reg-name').value;
-        const user = document.getElementById('reg-user').value;
-        const pass = document.getElementById('reg-pass').value;
+        const user = document.getElementById('reg-user').value.trim();
+        const pass = document.getElementById('reg-pass').value.trim();
         const school = document.getElementById('reg-school').value;
 
         if(!name || !user || !pass || !school) {
@@ -707,25 +709,15 @@
             const res = await fetch(`${API_URL}/api/student/register`, { method:'POST', body:fd });
             toggleLoader(false);
             if (res.ok) { 
-                const newUser = {
-                    full_name: name,
-                    username: user,
-                    school_name: school,
-                    avatar_url: selectedAvatarUrl,
-                    xp: 0
-                };
-                updateAllStudentsList(newUser);
-                alert("تم التسجيل! سجل دخولك الآن."); 
+                alert("تم التسجيل بنجاح! سجل دخولك الآن."); 
                 toggleAuth(); 
             }
             else alert("اسم المستخدم موجود مسبقاً أو هناك خطأ في البيانات.");
         } catch(e) { toggleLoader(false); alert("⚠️ الخادم غير متصل. يرجى تشغيل المحرك!"); }
     }
 
-    // --- 🚪 دالة الخروج المحدثة (Logout) ---
     function logout() { 
         if(isExamMode) { alert("لا يمكنك الهروب أثناء الاختبار الصارم! ⚔️"); return; }
-        // مسح بيانات الطالب وصفة الدخول للعودة للبوابة الرئيسية
         localStorage.removeItem('mathHero'); 
         localStorage.removeItem('royal_role'); 
         window.location.href = 'index.html'; 
@@ -815,19 +807,17 @@
     function proceedToChallenge() {
         document.getElementById('choice-overlay').style.display='none';
         isExamMode = false;
-        currentExamPointsPerQ = 100; // الدرجة الافتراضية
+        currentExamPointsPerQ = 100;
         startChallenge(selectedLessonForChoice);
     }
 
-    // --- بدء الاختبار المجدول (تفعيل الشاشة الكاملة) ---
     function startScheduledExam() {
         if(!scheduledExamData) return;
         
         document.getElementById('exam-notification').style.display = 'none';
         isExamMode = true; 
-        currentExamPointsPerQ = parseInt(scheduledExamData.points_per_q) || 10; // درجة السؤال من المعلم
+        currentExamPointsPerQ = parseInt(scheduledExamData.points_per_q) || 10;
         
-        // تفعيل وضع الشاشة الكاملة
         const fullscreenDiv = document.getElementById('exam-fullscreen-mode');
         fullscreenDiv.style.display = 'flex';
         
@@ -840,11 +830,9 @@
         } catch(err) { console.log("Fullscreen API not supported"); }
 
         document.getElementById('fullscreen-exam-title').innerText = scheduledExamData.title;
-        
         startChallenge(scheduledExamData.target_lesson);
     }
 
-    // --- نظام المؤقت ---
     function startTimer(minutes) {
         clearInterval(examTimerInterval);
         let time = minutes * 60; 
@@ -872,7 +860,6 @@
         }, 1000);
     }
 
-    // --- التسليم الإجباري ---
     async function forceSubmitExam() {
         playSound(examEndSound);
         document.getElementById('options-area').innerHTML = ""; 
@@ -885,7 +872,6 @@
         setTimeout(() => { finishChallenge(true); }, 2000);
     }
 
-    // --- المحرك السحري لجلب الأسئلة وفلترتها حسب توجيهات المعلم ---
     async function startChallenge(lessonStr) {
         currentLesson = isExamMode ? scheduledExamData.title : lessonStr; 
         correctCount = 0;
@@ -903,15 +889,10 @@
             let filteredQs = allQs.filter(q => targetLessonsArray.includes(q.lesson));
             
             if(isExamMode && scheduledExamData) {
-                // 1. فلترة نوع الأسئلة (إذا لم يكن 'all')
                 if(scheduledExamData.target_q_type && scheduledExamData.target_q_type !== 'all') {
                     filteredQs = filteredQs.filter(q => q.q_type === scheduledExamData.target_q_type);
                 }
-                
-                // 2. خلط عشوائي للأسئلة
                 filteredQs = filteredQs.sort(() => Math.random() - 0.5);
-                
-                // 3. سحب العدد المطلوب فقط
                 const numQs = parseInt(scheduledExamData.num_questions) || 10;
                 challengeQs = filteredQs.slice(0, numQs);
             } else {
@@ -1080,7 +1061,7 @@
                 else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
             } catch(e) {}
         }
-        location.reload(); // تحديث الصفحة للعودة للحالة الطبيعية
+        location.reload(); 
     }
 
     async function sendResultToBackend() {
