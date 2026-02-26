@@ -234,4 +234,4 @@ if __name__ == "__main__":
     # التعديل الملكي الأخير للعمل على Render بنجاح
     port = int(os.environ.get("PORT", 8000))
     print(f"🚀 إمبراطورية الرياضيات الملكية جاهزة على المنفذ {port}...")
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    uvicorn.run("main:app", host="0.0.0.0", port=port)
